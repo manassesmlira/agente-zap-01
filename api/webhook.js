@@ -1,5 +1,5 @@
-import pensarNaResposta from '../geminiService.js';
-import enviarMensagemCrm from '../crmService.js';
+import pensarNaResposta from '../lib/geminiService.js';
+import enviarMensagemCrm from '../lib/crmService.js';
 
 export default async function handler(req, res) {
   // --- NOVO LOG DE ENTRADA IMEDIATO ---
