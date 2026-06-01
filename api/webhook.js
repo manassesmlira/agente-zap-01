@@ -19,6 +19,7 @@ export default async function handler(req, res) {
   }
 
   try {
+    console.log("Conteúdo de req.body:", req.body);
     const { Nome, Numero, 'Dados do Evento': mensagemDoLead } = req.body;
 
     if (!mensagemDoLead || !Numero) {
