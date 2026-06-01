@@ -9,7 +9,7 @@ export default async function enviarMensagemCrm(numero, mensagem) {
   const url = `https://api-whatsapp.wascript.com.br/api/enviar-texto/${token}`;
 
   try {
-    console.log("Dados enviados para a Wascript:", { phone: numero, message: mensagem });
+    
     const response = await fetch(url, {
       method: 'POST',
       headers: {
