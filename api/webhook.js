@@ -1,13 +1,11 @@
-import pensarNaResposta from '../lib/geminiService.js';
-import enviarMensagemCrm from '../lib/crmService.js';
+import pensarNaResposta from '../lib/geminiService.js'; // Caminho atualizado
+import enviarMensagemCrm from '../lib/crmService.js';   // Caminho atualizado
 
 export default async function handler(req, res) {
-  // --- NOVO LOG DE ENTRADA IMEDIATO ---
+  // --- LOG DE ENTRADA IMEDIATO ---
   console.log("Webhook: Função handler invocada.");
-  console.log("Webhook: Tipo de req:", typeof req);
-  console.log("Webhook: Tipo de res:", typeof res);
-  // Fazer um log mais detalhado de req e res aqui pode causar o erro de circularidade
-  // então vamos apenas verificar os tipos por enquanto.
+  console.log(`Webhook: Método da requisição: ${req.method}`);
+  console.log(`Webhook: URL da requisição: ${req.url}`);
 
   // 1. Configurando os Headers de CORS (Os "crachás" de permissão)
   res.setHeader('Access-Control-Allow-Credentials', true);
@@ -23,7 +21,7 @@ export default async function handler(req, res) {
 
   // 3. Bloqueia o que não for POST
   if (req.method !== 'POST') {
-    console.warn(`Webhook: Método ${req.method} não permitido. Apenas POST é aceito.`);
+    console.warn(`Webhook: Método ${req.method} não permitido. Retornando 405.`);
     return res.status(405).json({ error: 'Método não permitido' });
   }
 
