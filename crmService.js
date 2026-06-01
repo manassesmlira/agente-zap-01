@@ -1,15 +1,11 @@
-// crmService.js
-
-export async function enviarMensagemCrm(numero, mensagem) {
-  // O token deve estar configurado no seu arquivo .env
+export default async function enviarMensagemCrm(numero, mensagem) {
   const token = process.env.CRM_API_TOKEN;
   
   if (!token) {
-    console.error("ERRO: Token do CRM não configurado no .env");
-    return;
+    console.error("ERRO: Token do CRM ausente.");
+    return false;
   }
 
-  // URL base da Wascript apontando para o endpoint de texto com o seu token
   const url = `https://api-whatsapp.wascript.com.br/api/enviar-texto/${token}`;
 
   try {
@@ -18,7 +14,6 @@ export async function enviarMensagemCrm(numero, mensagem) {
       headers: {
         'Content-Type': 'application/json'
       },
-      // Enviando os dados no formato esperado pela API
       body: JSON.stringify({
         phone: numero,
         message: mensagem
@@ -27,17 +22,15 @@ export async function enviarMensagemCrm(numero, mensagem) {
 
     const data = await response.json();
 
-    // Verificando os retornos baseados na documentação da Wascript
     if (data.success) {
       console.log(`Mensagem enviada com sucesso para ${numero}`);
       return true;
     } else {
-      console.error("A API do CRM retornou um erro:", data.message);
+      console.error("Erro no retorno da API Wascript:", data);
       return false;
     }
-    
   } catch (erro) {
-    console.error("Falha na requisição para o CRM:", erro);
+    console.error("Falha na requisição para a Wascript:", erro);
     return false;
   }
 }
