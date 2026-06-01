@@ -1,0 +1,17 @@
+# Dependências (A Vercel instala isso automaticamente lá)
+node_modules/
+
+# Variáveis de ambiente (Você já colocou, perfeito!)
+.env
+
+# Logs de erro do Node/NPM
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Pasta oculta que a CLI da Vercel pode gerar localmente
+.vercel/
+
+# Arquivos temporários de sistema operacional (Mac/Windows)
+.DS_Store
+Thumbs.db
