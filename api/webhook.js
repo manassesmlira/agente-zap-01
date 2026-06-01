@@ -2,6 +2,13 @@ import pensarNaResposta from '../geminiService.js';
 import enviarMensagemCrm from '../crmService.js';
 
 export default async function handler(req, res) {
+  // --- NOVO LOG DE ENTRADA IMEDIATO ---
+  console.log("Webhook: Função handler invocada.");
+  console.log("Webhook: Tipo de req:", typeof req);
+  console.log("Webhook: Tipo de res:", typeof res);
+  // Fazer um log mais detalhado de req e res aqui pode causar o erro de circularidade
+  // então vamos apenas verificar os tipos por enquanto.
+
   // 1. Configurando os Headers de CORS (Os "crachás" de permissão)
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*'); // O asterisco permite qualquer origem (seu CRM)
@@ -24,7 +31,7 @@ export default async function handler(req, res) {
   try {
     // Tenta ler o corpo da requisição como JSON
     requestBody = await req.json();
-    console.log("Webhook: Conteúdo COMPLETO de req.body (após req.json()):", JSON.stringify(requestBody, null, 2));
+    console.log("Webhook: Conteúdo COMPLETO de requestBody (após req.json()):", JSON.stringify(requestBody, null, 2));
   } catch (parseError) {
     console.error("Webhook: Erro ao parsear req.body como JSON:", parseError);
     return res.status(400).json({ error: 'Corpo da requisição inválido ou não é JSON.' });
@@ -59,7 +66,6 @@ export default async function handler(req, res) {
 
   } catch (erro) {
     console.error("Webhook: Erro no processamento do webhook:", erro);
-    // Adicionando um log mais detalhado do erro, se possível
     if (erro instanceof TypeError && erro.message.includes("circular structure")) {
         console.error("Webhook: Detalhes do erro circular: O problema é que um objeto complexo (provavelmente req ou res) está sendo passado onde uma string simples era esperada.");
     }
