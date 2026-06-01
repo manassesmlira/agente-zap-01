@@ -19,7 +19,17 @@ export default async function handler(req, res) {
   // 2. Respondendo ao "Preflight" (A pergunta de segurança do CORS)
   if (req.method === 'OPTIONS') {
     console.log("Webhook: Requisição OPTIONS recebida. Respondendo com 200 OK.");
-    return res.status(200).end();
+    // return res.status(200).end(); // <-- ESTA LINHA ESTÁ CAUSANDO O ERRO
+
+    // NOVA FORMA DE RESPONDER NO VERCEL
+    res.writeHead(200, {
+      'Access-Control-Allow-Origin': '*', // Repetir para OPTIONS
+      'Access-Control-Allow-Methods': 'GET,OPTIONS,PATCH,DELETE,POST,PUT',
+      'Access-Control-Allow-Headers': 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version',
+      'Access-Control-Allow-Credentials': true
+    });
+    res.end();
+    return; // Garante que a função termina aqui
   }
 
   // 3. Bloqueia o que não for POST
