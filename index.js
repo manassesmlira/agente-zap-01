@@ -56,33 +56,50 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Corpo da requisição inválido ou não é JSON.' });
   }
 
-  try {
+    try {
     // Desestrutura o objeto requestBody parseado
-    const { Nome, Numero, 'Dados do Evento': mensagemDoLead } = requestBody;
+    // const { Nome, Numero, 'Dados do Evento': mensagemDoLead } = requestBody; // <-- ESTA LINHA ESTÁ INCORRETA PARA O SEU JSON
+
+    // NOVA FORMA DE EXTRAIR OS DADOS DO JSON REAL DO CRM
+    const Nome = requestBody.name || 'Cliente'; // Use 'name' ou um valor padrão
+    const Numero = requestBody.number; // Use 'number'
+    let mensagemDoLead = '';
+
+    // Tenta obter a mensagem do lastMessage.text ou de eventDetails.text (se existir)
+    if (requestBody.lastMessage && requestBody.lastMessage.text) {
+        mensagemDoLead = requestBody.lastMessage.text;
+    } else if (requestBody.eventDetails && requestBody.eventDetails.text) { // Se o CRM enviar em eventDetails.text
+        mensagemDoLead = requestBody.eventDetails.text;
+    } else {
+        // Se não for texto, podemos tentar pegar de outro lugar ou definir uma mensagem padrão
+        console.warn("Webhook: Mensagem de texto não encontrada em lastMessage.text ou eventDetails.text. Tipo de evento:", requestBody.eventDetails?.type);
+        // Para este caso de sticker, você pode decidir o que fazer:
+        // - Ignorar (retornar 200 OK sem processar)
+        // - Enviar uma mensagem padrão para a IA (ex: "Recebi um sticker")
+        // - Retornar um erro 400 se você só processa texto
+        if (requestBody.eventDetails?.type === 'sticker') {
+            console.log("Webhook: Ignorando evento de sticker.");
+            return res.status(200).json({ success: true, message: "Evento de sticker ignorado." });
+        }
+        mensagemDoLead = "Recebi uma mensagem não textual."; // Mensagem padrão para a IA
+    }
+
 
     // Logs para verificar os valores após a desestruturação
-    console.log(`Webhook: Valores após desestruturação: Nome='${Nome}', Numero='${Numero}', mensagemDoLead='${mensagemDoLead}'`);
+    console.log(`Webhook: Valores após extração: Nome='${Nome}', Numero='${Numero}', mensagemDoLead='${mensagemDoLead}'`);
 
     // Verificação de tipo e existência dos dados
     if (typeof Numero !== 'string' || !Numero) {
         console.error(`Webhook: Erro: 'Numero' inválido ou ausente. Valor: ${Numero}`);
         return res.status(400).json({ error: 'Número do lead inválido ou ausente.' });
     }
+    // A validação de mensagemDoLead agora depende de como você a trata para eventos não textuais
     if (typeof mensagemDoLead !== 'string' || !mensagemDoLead) {
         console.error(`Webhook: Erro: 'Dados do Evento' (mensagemDoLead) inválido ou ausente. Valor: ${mensagemDoLead}`);
         return res.status(400).json({ error: 'Mensagem do lead inválida ou ausente.' });
     }
 
-    console.log(`Webhook: Iniciando processamento da IA para Nome: ${Nome}, Mensagem: ${mensagemDoLead.substring(0, Math.min(mensagemDoLead.length, 50))}...`);
-    const respostaIA = await pensarNaResposta(Nome, mensagemDoLead);
-    console.log(`Webhook: Resposta da IA recebida: ${respostaIA.substring(0, Math.min(respostaIA.length, 50))}...`);
-
-    console.log(`Webhook: Enviando mensagem para CRM: Numero='${Numero}', Mensagem='${respostaIA.substring(0, Math.min(respostaIA.length, 50))}...'`);
-    await enviarMensagemCrm(Numero, respostaIA);
-    console.log("Webhook: Mensagem enviada ao CRM com sucesso.");
-
-    return res.status(200).json({ success: true });
-
+    // ... restante do seu código (chamadas à IA e CRM) ...
   } catch (erro) {
     console.error("Webhook: Erro no processamento do webhook:", erro);
     if (erro instanceof TypeError && erro.message.includes("circular structure")) {
