@@ -21,11 +21,14 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Log para inspecionar o req.body ANTES da desestruturação
-    console.log("Conteúdo COMPLETO de req.body recebido:", JSON.stringify(req.body, null, 2));
+    // --- MUDANÇA CRÍTICA AQUI ---
+    // Em Vercel Edge Functions, req.body é um ReadableStream.
+    // Você precisa lê-lo explicitamente como JSON.
+    const requestBody = await req.json();
+    console.log("Conteúdo COMPLETO de requestBody (após req.json()):", JSON.stringify(requestBody, null, 2));
 
-    // Tentativa de desestruturação
-    const { Nome, Numero, 'Dados do Evento': mensagemDoLead } = req.body;
+    // Agora, desestruture o objeto requestBody parseado
+    const { Nome, Numero, 'Dados do Evento': mensagemDoLead } = requestBody;
 
     // Logs para verificar os valores após a desestruturação
     console.log(`Valores após desestruturação: Nome='${Nome}', Numero='${Numero}', mensagemDoLead='${mensagemDoLead}'`);
@@ -35,11 +38,12 @@ export default async function handler(req, res) {
        return res.status(400).json({ error: 'Faltam dados do lead (mensagemDoLead ou Numero)' });
     }
 
-    console.log(`Iniciando processamento da IA para Nome: ${Nome}, Mensagem: ${mensagemDoLead.substring(0, 50)}...`);
+    console.log(`Iniciando processamento da IA para Nome: ${Nome}, Mensagem: ${mensagemDoLead.substring(0, Math.min(mensagemDoLead.length, 50))}...`);
     const respostaIA = await pensarNaResposta(Nome, mensagemDoLead);
-    console.log(`Resposta da IA recebida: ${respostaIA.substring(0, 50)}...`);
+    console.log(`Resposta da IA recebida: ${respostaIA.substring(0, Math.min(respostaIA.length, 50))}...`);
 
-    console.log(`Enviando mensagem para CRM: Numero='${Numero}', Mensagem='${respostaIA.substring(0, 50)}...'`);
+    console.log(`Enviando mensagem para CRM: Numero='${Numero}', Mensagem='${respostaIA.substring(0, Math.min(respostaIA.length, 50))}...'`);
+    // O console.log dentro de enviarMensagemCrm ainda é útil para ver o que está sendo passado
     await enviarMensagemCrm(Numero, respostaIA);
     console.log("Mensagem enviada ao CRM com sucesso.");
 
