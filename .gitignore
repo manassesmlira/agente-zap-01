@@ -15,3 +15,6 @@ yarn-error.log*
 # Arquivos temporários de sistema operacional (Mac/Windows)
 .DS_Store
 Thumbs.db
+
+testGemini.js
+chat.js
